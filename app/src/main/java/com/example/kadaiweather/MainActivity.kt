@@ -11,6 +11,7 @@ import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import com.example.kadaiweather.databinding.ActivityMainBinding
 import com.google.android.gms.location.*
+import kotlinx.coroutines.*
 
 
 class MainActivity : AppCompatActivity() {
@@ -64,8 +65,21 @@ class MainActivity : AppCompatActivity() {
             )
         }//↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑
 
+        //天気取得
+        binding.weatherButton.setOnClickListener{
+            buttonListener()
+        }
     }
 
+@OptIn(DelicateCoroutinesApi::class)
+fun buttonListener(): Job = GlobalScope.launch {
+    val mWeatherGetter = WeatherGetter()
+    mWeatherGetter.weatherGet(lat, long)
+    withContext(Dispatchers.IO) {
+        Thread.sleep(3000)
+    }
+    mWeatherGetter.tempGet(lat,long)
+}
     fun locationStart() {
         lateinit var fusedLocationClient: FusedLocationProviderClient
         lateinit var locationCallback: LocationCallback
