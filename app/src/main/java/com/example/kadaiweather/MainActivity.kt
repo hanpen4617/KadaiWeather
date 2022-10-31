@@ -71,15 +71,20 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-@OptIn(DelicateCoroutinesApi::class)
-fun buttonListener(): Job = GlobalScope.launch {
-    val mWeatherGetter = WeatherGetter()
-    mWeatherGetter.weatherGet(lat, long)
-    withContext(Dispatchers.IO) {
-        Thread.sleep(3000)
+
+    @OptIn(DelicateCoroutinesApi::class)
+    fun buttonListener(): Job = GlobalScope.launch {
+        val mWeatherGetter = WeatherGetter()
+        var(dailyWeather,dailyTemp) = mWeatherGetter.dailyGet(lat, long)
+        withContext(Dispatchers.IO) {
+            Thread.sleep(3000)
+        }
+        var (houryWeather,houryTemp) = mWeatherGetter.houryGet(lat,long)
+        //ここに引数を使用してアダプター再設定
+        //アダプターはグローバル変数に
+        //アダプターにデフォルト引数を指定して呼び出し時処理を分岐させる
     }
-    mWeatherGetter.tempGet(lat,long)
-}
+
     fun locationStart() {
         lateinit var fusedLocationClient: FusedLocationProviderClient
         lateinit var locationCallback: LocationCallback

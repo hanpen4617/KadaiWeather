@@ -4,78 +4,85 @@ import org.json.JSONObject
 import java.io.BufferedReader
 import java.io.InputStreamReader
 import java.net.URL
+import java.time.Instant
+import java.time.LocalDateTime
+import java.time.ZoneId
+import java.time.ZonedDateTime
+import java.time.format.DateTimeFormatter
 
 class WeatherGetter {
     private val key = "9c5b8afab877ebe11f361113ac477602"
-    fun weatherGet(lat: Double,lon: Double):List<String>{
-        val weatherList = mutableListOf<String>()
-        val API_URL = "https://api.openweathermap.org/data/2.5/onecall?lat=$lat&lon=$lon&lang=ja&APPID=$key"
+    fun dailyGet(lat: Double, lon:Double):Pair<List<String>,List<String>>{
+        val dailyWeather = mutableListOf<String>()
+        val dailyTemp = mutableListOf<String>()
+        val API_URL = "https://api.openweathermap.org/data/2.5/onecall?lat=$lat&lon=$lon&units=metric&lang=ja&APPID=$key"
         val url = URL(API_URL)
         //APIから情報を取得する.
         val br = BufferedReader(InputStreamReader(url.openStream()))
-        // 所得した情報を文字列化
+        //取得した情報を文字列に変換
         val str = br.readText()
         //json形式のデータとして識別
         val json = JSONObject(str)
-
-        // hourlyの配列を取得
-        val hourly = json.getJSONArray("hourly")
-        // 十時間分の天気予報を取得
-        for (i in 0..11) {
-            val firstObject = hourly.getJSONObject(i)
-            val weather = firstObject.getJSONArray("weather").getJSONObject(0)
-            // unixtime形式で保持されている時刻を取得
-            // 天気を取得
-            val descriptionText = weather.getString("description")
-            weatherList.add(descriptionText)
-        }
-        println(weatherList)
-
-
-        // dailyの配列を取得
+        //日別の配列を取得
         val daily = json.getJSONArray("daily")
-        // 十時間分の天気予報を取得
+
+        //7日分の天気を取得
         for (i in 0..6) {
             val firstObject = daily.getJSONObject(i)
             val weather = firstObject.getJSONArray("weather").getJSONObject(0)
-            // unixtime形式で保持されている時刻を取得
-            // 天気を取得
+            //天気を取得
             val descriptionText = weather.getString("description")
-            weatherList.add(descriptionText)
+            //リストに天気を追加
+            dailyWeather.add(descriptionText)
         }
-        println(weatherList)
-        return weatherList
+        println(dailyWeather)
+
+        for (i in 0..6) {
+            val firstObject = daily.getJSONObject(i)
+            val temp = firstObject.getJSONObject("temp")
+            //気温を取得
+            val day = temp.getString("day")
+            dailyTemp.add("$day℃")
+        }
+        println(dailyTemp)
+
+        return dailyWeather to dailyTemp
     }
-   fun tempGet(lat: Double, lon:Double):List<String>{
-       val tempList = mutableListOf<String>()
-       val API_URL = "https://api.openweathermap.org/data/2.5/onecall?lat=$lat&lon=$lon&units=metric&lang=ja&APPID=$key"
-       val url = URL(API_URL)
-       //APIから情報を取得する.
-       val br = BufferedReader(InputStreamReader(url.openStream()))
-       // 所得した情報を文字列化
-       val str = br.readText()
-       //json形式のデータとして識別
-       val json = JSONObject(str)
 
-       // hourlyの配列を取得
-       val hourly = json.getJSONArray("hourly")
-       for (i in 0..11) {
-           val firstObject = hourly.getJSONObject(i)
-           val temp = firstObject.getString("temp")
-           tempList.add(temp+"℃")
-       }
-       println(tempList)
-       // hourlyの配列を取得
-       val daily = json.getJSONArray("daily")
-       for (i in 0..6) {
-           val firstObject = daily.getJSONObject(i)
 
-           // unixtime形式で保持されている時刻を取得
-           // 天気を取得
-           val day = temp.getString("day")
-           tempList.add(day)
-       }
-       println(tempList)
-        return tempList
+    fun houryGet(lat: Double,lon: Double):Pair<List<String>,List<String>>{
+        val houryWeather = mutableListOf<String>()
+        val houryTemp = mutableListOf<String>()
+
+        val API_URL = "https://api.openweathermap.org/data/2.5/onecall?lat=$lat&lon=$lon&units=metric&lang=ja&APPID=$key"
+        val url = URL(API_URL)
+        //APIから情報を取得する.
+        val br = BufferedReader(InputStreamReader(url.openStream()))
+        //取得した情報を文字列に変換
+        val str = br.readText()
+        //json形式のデータとして識別
+        val json = JSONObject(str)
+        //時間別の配列を取得
+        val hourly = json.getJSONArray("hourly")
+        //12時間分の天気予報を取得
+        for (i in 0..11) {
+            //ここに時間を
+            val firstObject = hourly.getJSONObject(i)
+            val weather = firstObject.getJSONArray("weather").getJSONObject(0)
+            //天気を取得
+            val descriptionText = weather.getString("description")
+            //リストに天気を追加
+            houryWeather.add(descriptionText)
+        }
+        println(houryWeather)
+        //時間別の配列を取得
+        for (i in 0..11) {
+            val firstObject = hourly.getJSONObject(i)
+            val temp = firstObject.getString("temp")
+            houryTemp.add("$temp℃")
+        }
+        println(houryTemp)
+
+        return houryWeather to houryTemp
     }
 }
