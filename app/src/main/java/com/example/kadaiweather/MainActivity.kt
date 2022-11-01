@@ -11,6 +11,7 @@ import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import com.example.kadaiweather.databinding.ActivityMainBinding
 import com.google.android.gms.location.*
+import io.realm.Realm
 import kotlinx.coroutines.*
 
 
@@ -42,7 +43,7 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
-
+        Realm.init(this)
         //パーミッションが許可されているならば//↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓
         if (ContextCompat.checkSelfPermission(
                 this,
@@ -75,14 +76,22 @@ class MainActivity : AppCompatActivity() {
     @OptIn(DelicateCoroutinesApi::class)
     fun buttonListener(): Job = GlobalScope.launch {
         val mWeatherGetter = WeatherGetter()
-        var(dailyWeather,dailyTemp) = mWeatherGetter.dailyGet(lat, long)
+        val tripleDaily = mWeatherGetter.dailyGet(lat, long)
+        val dailyWeather = tripleDaily.first
+        val dailyTemp = tripleDaily.second
+        val week = tripleDaily.third
         withContext(Dispatchers.IO) {
             Thread.sleep(3000)
         }
-        var (houryWeather,houryTemp) = mWeatherGetter.houryGet(lat,long)
-        //ここに引数を使用してアダプター再設定
+        val tripleHoury = mWeatherGetter.houryGet(lat,long)
+        val houryWeather = tripleDaily.first
+        val houryTemp = tripleDaily.second
+        val houry = tripleDaily.third
+        //データベース操作クラスを用意　　　　　
+        val addDB = AddDatabase()
+        addDB.addDB(dailyWeather,dailyTemp,week)
         //アダプターはグローバル変数に
-        //アダプターにデフォルト引数を指定して呼び出し時処理を分岐させる
+        //アダプターにデフォルト引数を指定して呼び出し時　処理を分岐させる
     }
 
     fun locationStart() {
